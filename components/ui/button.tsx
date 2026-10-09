@@ -12,12 +12,12 @@ const Button = React.forwardRef<
     'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 whitespace-nowrap';
 
   const variants = {
-    default: 'bg-white text-black hover:bg-zinc-100 active:bg-zinc-200',
-    destructive: 'bg-red-600 text-white hover:bg-red-700',
-    outline: 'border border-zinc-700 bg-transparent text-zinc-200 hover:bg-zinc-800',
-    ghost: 'text-zinc-300 hover:bg-zinc-800 hover:text-white',
-    link: 'text-zinc-300 underline-offset-4 hover:underline hover:text-white',
-    secondary: 'bg-zinc-800 text-zinc-200 hover:bg-zinc-700',
+    default: 'bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/95 shadow-sm font-medium',
+    destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm',
+    outline: 'border border-border bg-card/50 text-foreground hover:bg-secondary hover:text-foreground',
+    ghost: 'text-muted-foreground hover:bg-muted hover:text-foreground',
+    link: 'text-primary underline-offset-4 hover:underline',
+    secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
   };
 
   const sizes = {
