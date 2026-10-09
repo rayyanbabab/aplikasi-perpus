@@ -8,13 +8,13 @@ const Badge = React.forwardRef<
   }
 >(({ className, variant = 'default', ...props }, ref) => {
   const variantStyles = {
-    default: 'bg-zinc-800 text-zinc-200 border-zinc-700',
-    secondary: 'bg-zinc-700 text-zinc-300 border-zinc-600',
-    destructive: 'bg-red-950/60 text-red-400 border-red-900',
-    outline: 'border-zinc-700 text-zinc-300 bg-transparent',
-    success: 'bg-emerald-950/60 text-emerald-400 border-emerald-900',
-    warning: 'bg-amber-950/60 text-amber-400 border-amber-900',
-    info: 'bg-blue-950/60 text-blue-400 border-blue-900',
+    default: 'bg-secondary text-secondary-foreground border-border/80 font-medium',
+    secondary: 'bg-muted text-muted-foreground border-border/60',
+    destructive: 'bg-rose-950/40 text-rose-300 border-rose-800/60 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-900',
+    outline: 'border-border text-foreground bg-transparent',
+    success: 'bg-emerald-950/40 text-emerald-300 border-emerald-800/60 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-900',
+    warning: 'bg-amber-950/40 text-amber-300 border-amber-800/60 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-900',
+    info: 'bg-slate-800/80 text-slate-200 border-slate-700',
   };
 
   return (
