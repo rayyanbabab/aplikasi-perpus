@@ -7,9 +7,9 @@ export default async function MemberLayout({ children }: { children: React.React
   if (!session) redirect('/login');
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
       <MemberNav userName={session.user.name} />
-      <main className="max-w-6xl mx-auto px-4 py-8">
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 pb-16">
         {children}
       </main>
     </div>
