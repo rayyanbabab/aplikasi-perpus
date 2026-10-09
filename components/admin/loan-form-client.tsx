@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation';
 import { createLoan } from '@/lib/actions/peminjaman';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, AlertCircle, Calendar, ShieldAlert, BookOpen, Clock } from 'lucide-react';
+import Link from 'next/link';
 
 interface Member { id: string; name: string; email: string; memberId?: string | null }
 interface Book { id: string; title: string; author: string; availableCopies: number; categoryName?: string | null }
@@ -37,33 +39,36 @@ export function LoanFormClient({ members, books }: Props) {
     }
   }
 
-  const dueDate = new Date();
-  dueDate.setDate(dueDate.getDate() + 7);
+  const todayFormatted = new Intl.DateTimeFormat('id-ID', {
+    dateStyle: 'long',
+  }).format(new Date());
 
   return (
-    <Card>
-      <CardContent className="p-6">
+    <Card className="border-border/80 shadow-md">
+      <CardContent className="p-6 sm:p-8">
         {error && (
-          <div className="mb-5 p-3 bg-red-950/50 border border-red-900 rounded-lg text-red-400 text-sm flex items-start gap-2">
+          <div className="mb-6 p-4 bg-destructive/10 border border-destructive/30 rounded-xl text-destructive text-sm flex items-start gap-2.5">
             <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-            {error}
+            <p className="leading-snug">{error}</p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Pilih Anggota */}
           <div>
-            <Label htmlFor="memberId">Anggota *</Label>
+            <Label htmlFor="memberId" className="text-xs font-semibold uppercase tracking-wider text-foreground">
+              Anggota Peminjam *
+            </Label>
             <select
               id="memberId"
               name="memberId"
               required
-              className="mt-1.5 flex h-9 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-1 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/20"
+              className="mt-1.5 flex h-11 w-full rounded-xl border border-input bg-card/60 px-3.5 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 [&>option]:bg-card [&>option]:text-foreground"
             >
-              <option value="">Pilih anggota...</option>
+              <option value="">Pilih anggota perpustakaan...</option>
               {members.map((m) => (
                 <option key={m.id} value={m.id}>
-                  {m.name} {m.memberId ? `(${m.memberId})` : ''} — {m.email}
+                  {m.name} {m.memberId ? `(${m.memberId})` : ''} · {m.email}
                 </option>
               ))}
             </select>
@@ -71,7 +76,9 @@ export function LoanFormClient({ members, books }: Props) {
 
           {/* Pilih Buku */}
           <div>
-            <Label htmlFor="bookId">Buku *</Label>
+            <Label htmlFor="bookId" className="text-xs font-semibold uppercase tracking-wider text-foreground">
+              Judul Buku yang Dipinjam *
+            </Label>
             <select
               id="bookId"
               name="bookId"
@@ -80,25 +87,25 @@ export function LoanFormClient({ members, books }: Props) {
                 const book = books.find((b) => b.id === e.target.value) ?? null;
                 setSelectedBook(book);
               }}
-              className="mt-1.5 flex h-9 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-1 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/20"
+              className="mt-1.5 flex h-11 w-full rounded-xl border border-input bg-card/60 px-3.5 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 [&>option]:bg-card [&>option]:text-foreground"
             >
-              <option value="">Pilih buku...</option>
+              <option value="">Pilih judul koleksi...</option>
               {books.map((b) => (
                 <option key={b.id} value={b.id} disabled={b.availableCopies === 0}>
-                  {b.title} — {b.author}
-                  {b.availableCopies === 0 ? ' [Stok Habis]' : ` [${b.availableCopies} tersedia]`}
+                  {b.title} (oleh {b.author})
+                  {b.availableCopies === 0 ? ' [Stok Habis]' : ` [Tersedia: ${b.availableCopies} buku]`}
                 </option>
               ))}
             </select>
 
             {selectedBook && (
-              <div className="mt-2 p-3 bg-zinc-800 rounded-lg border border-zinc-700 text-xs space-y-1">
-                <p className="text-zinc-300 font-medium">{selectedBook.title}</p>
-                <p className="text-zinc-500">Penulis: {selectedBook.author}</p>
-                <p className={selectedBook.availableCopies > 0 ? 'text-emerald-400' : 'text-red-400'}>
+              <div className="mt-3 p-3.5 bg-secondary/50 rounded-xl border border-border/80 text-xs space-y-1">
+                <p className="text-foreground font-semibold text-sm">{selectedBook.title}</p>
+                <p className="text-muted-foreground">Pengarang: {selectedBook.author}</p>
+                <p className={selectedBook.availableCopies > 0 ? 'text-emerald-500 font-medium' : 'text-destructive font-medium'}>
                   {selectedBook.availableCopies > 0
-                    ? `✓ ${selectedBook.availableCopies} eksemplar tersedia`
-                    : '✗ Stok habis — tidak bisa dipinjam'}
+                    ? `Status: ${selectedBook.availableCopies} eksemplar fisik tersedia di rak.`
+                    : 'Status: Seluruh eksemplar sedang dipinjam (stok kosong).'}
                 </p>
               </div>
             )}
@@ -106,40 +113,53 @@ export function LoanFormClient({ members, books }: Props) {
 
           {/* Durasi */}
           <div>
-            <Label htmlFor="loanDays">Durasi Peminjaman (hari) *</Label>
+            <Label htmlFor="loanDays" className="text-xs font-semibold uppercase tracking-wider text-foreground">
+              Masa Peminjaman *
+            </Label>
             <select
               id="loanDays"
               name="loanDays"
               defaultValue="7"
-              className="mt-1.5 flex h-9 w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-1 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/20"
+              className="mt-1.5 flex h-11 w-full rounded-xl border border-input bg-card/60 px-3.5 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 [&>option]:bg-card [&>option]:text-foreground"
             >
-              <option value="7">7 hari (standar)</option>
-              <option value="14">14 hari</option>
-              <option value="21">21 hari</option>
-              <option value="30">30 hari</option>
+              <option value="7">7 Hari (Standar Mahasiswa)</option>
+              <option value="14">14 Hari (Dosen / Tugas Akhir)</option>
+              <option value="21">21 Hari (Riset Khusus)</option>
+              <option value="30">30 Hari (Masa Panjang)</option>
             </select>
           </div>
 
-          {/* Info */}
-          <div className="p-3 bg-zinc-800/50 border border-zinc-700 rounded-lg text-xs text-zinc-500 space-y-1">
-            <p>📅 Tanggal peminjaman: <span className="text-zinc-300">{new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span></p>
-            <p>⚠️ Anggota dengan denda belum lunas tidak bisa meminjam buku baru.</p>
-            <p>📚 Maksimal 3 buku dipinjam bersamaan per anggota.</p>
-            <p>💰 Denda keterlambatan: Rp 1.000/hari</p>
+          {/* Ketentuan Sirkulasi */}
+          <div className="p-4 bg-secondary/30 border border-border/70 rounded-xl text-xs space-y-2 text-muted-foreground">
+            <div className="flex items-center gap-2 text-foreground font-medium">
+              <Calendar className="w-3.5 h-3.5 text-primary" />
+              <span>Tanggal Peminjaman Efektif: <strong className="text-foreground font-semibold">{todayFormatted}</strong></span>
+            </div>
+            <div className="flex items-start gap-2">
+              <Clock className="w-3.5 h-3.5 text-primary mt-0.5 flex-shrink-0" />
+              <span>Tarif denda keterlambatan berlaku: <strong className="text-foreground">Rp 1.000 / hari keterlambatan</strong>.</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <ShieldAlert className="w-3.5 h-3.5 text-primary mt-0.5 flex-shrink-0" />
+              <span>Anggota dengan tanggungan denda aktif tidak dapat meminjam koleksi baru sebelum diselesaikan.</span>
+            </div>
           </div>
 
-          <div className="flex gap-3">
-            <button
+          <div className="flex items-center gap-3 pt-2">
+            <Button
               type="submit"
               disabled={loading}
-              className="flex items-center gap-2 px-5 py-2.5 bg-white text-black text-sm font-medium rounded-lg hover:bg-zinc-100 transition-colors disabled:opacity-50"
+              className="h-11 px-6 font-semibold gap-2 shadow-sm"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-              {loading ? 'Memproses...' : 'Buat Peminjaman'}
-            </button>
-            <a href="/admin/peminjaman" className="px-5 py-2.5 border border-zinc-700 text-zinc-400 text-sm rounded-lg hover:bg-zinc-800 transition-colors">
+              {loading ? 'Memproses Sirkulasi...' : 'Terbitkan Peminjaman'}
+            </Button>
+            <Link
+              href="/admin/peminjaman"
+              className="inline-flex items-center justify-center h-11 px-5 border border-border/80 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            >
               Batal
-            </a>
+            </Link>
           </div>
         </form>
       </CardContent>
