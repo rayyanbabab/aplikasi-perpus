@@ -1,16 +1,16 @@
-﻿import { db } from '@/lib/db';
+import { db } from '@/lib/db';
 import { loans, books, users, fines } from '@/lib/db/schema';
 import { eq, gte, lte, sql, and, desc } from 'drizzle-orm';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { formatRupiah, formatDate } from '@/lib/utils';
 import { ExportButtons } from '@/components/admin/export-buttons';
+import { BarChart3, Filter, BookOpen, Users, Receipt, Calendar, Trophy } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
 
-
-export const metadata: Metadata = { title: 'Laporan' };
+export const metadata: Metadata = { title: 'Laporan & Analitik Sirkulasi' };
 
 export default async function LaporanPage({
   searchParams,
@@ -75,150 +75,267 @@ export default async function LaporanPage({
   const fineStats = fineReport.rows[0] as any;
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/80 pb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-white">Laporan</h1>
-          <p className="text-zinc-500 text-sm mt-1">Rekap data perpustakaan per periode</p>
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary mb-1">
+            <BarChart3 className="w-3.5 h-3.5" />
+            <span>Audit & Analitik Pustaka</span>
+          </div>
+          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+            Laporan Rekapitulasi
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Statistik sirkulasi peminjaman, buku terpopuler, dan rekapitulasi denda per periode.
+          </p>
         </div>
         <ExportButtons loans={loanReport} from={from} to={to} />
       </div>
 
-      {/* Filter periode */}
-      <Card>
+      {/* Filter Periode */}
+      <Card className="border-border/80 shadow-xs">
         <CardContent className="p-4">
-          <form className="flex gap-3 flex-wrap items-end">
+          <form className="flex flex-col sm:flex-row items-start sm:items-end gap-3 flex-wrap">
             <div>
-              <label className="block text-xs text-zinc-500 mb-1">Dari Tanggal</label>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+                Mulai Tanggal
+              </label>
               <input
                 name="from"
                 type="date"
                 defaultValue={from}
-                className="h-9 px-3 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/20"
+                className="h-10 px-3.5 bg-background border border-input rounded-xl text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
               />
             </div>
             <div>
-              <label className="block text-xs text-zinc-500 mb-1">Sampai Tanggal</label>
+              <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+                Sampai Tanggal
+              </label>
               <input
                 name="to"
                 type="date"
                 defaultValue={to}
-                className="h-9 px-3 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/20"
+                className="h-10 px-3.5 bg-background border border-input rounded-xl text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
               />
             </div>
-            <button type="submit" className="h-9 px-4 bg-zinc-700 text-white text-sm rounded-lg hover:bg-zinc-600 transition-colors">
-              Tampilkan
+            <button
+              type="submit"
+              className="h-10 px-5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-colors shadow-sm inline-flex items-center gap-2"
+            >
+              <Filter className="w-3.5 h-3.5" />
+              <span>Terapkan Periode</span>
             </button>
           </form>
         </CardContent>
       </Card>
 
-      {/* Summary */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {[
-          { label: 'Total Peminjaman', value: loanReport.length },
-          { label: 'Masih Dipinjam', value: loanReport.filter((l) => l.status === 'dipinjam' || l.status === 'terlambat').length },
-          { label: 'Total Denda', value: formatRupiah(Number(fineStats?.total_amount ?? 0)) },
-          { label: 'Denda Belum Lunas', value: formatRupiah(Number(fineStats?.unpaid_amount ?? 0)) },
-        ].map((s) => (
-          <Card key={s.label}>
-            <CardContent className="p-4">
-              <p className="text-xs text-zinc-500 uppercase font-medium mb-2">{s.label}</p>
-              <p className="text-xl font-bold text-white">{s.value}</p>
-            </CardContent>
-          </Card>
-        ))}
+      {/* Metrics Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="border-border/80">
+          <CardContent className="p-5">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">
+              Total Peminjaman
+            </span>
+            <p className="font-serif text-3xl font-bold text-foreground">
+              {loanReport.length}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">transaksi pada periode ini</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/80">
+          <CardContent className="p-5">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">
+              Tercatat Selesai
+            </span>
+            <p className="font-serif text-3xl font-bold text-emerald-500">
+              {loanReport.filter((l) => l.status === 'dikembalikan').length}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">eksemplar telah dikembalikan</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/80">
+          <CardContent className="p-5">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">
+              Total Denda Periode
+            </span>
+            <p className="font-serif text-2xl font-bold text-foreground">
+              {formatRupiah(Number(fineStats?.total_amount ?? 0))}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {Number(fineStats?.total_fines ?? 0)} kasus keterlambatan
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/80">
+          <CardContent className="p-5">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">
+              Denda Terbayar
+            </span>
+            <p className="font-serif text-2xl font-bold text-emerald-500">
+              {formatRupiah(Number(fineStats?.paid_amount ?? 0))}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              sisa tertunggak: {formatRupiah(Number(fineStats?.unpaid_amount ?? 0))}
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* Top Books & Top Members */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Books */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Buku Paling Populer</CardTitle>
-            <CardDescription>5 buku paling sering dipinjam</CardDescription>
+        <Card className="border-border/80 shadow-md">
+          <CardHeader className="pb-3 border-b border-border/60">
+            <div className="flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-primary" />
+              <CardTitle className="font-serif text-base font-bold">Koleksi Terpopuler</CardTitle>
+            </div>
+            <CardDescription>5 judul buku paling sering dipinjam sivitas pada periode ini.</CardDescription>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="divide-y divide-zinc-800">
+            <div className="divide-y divide-border/60">
               {(topBooks.rows as any[]).map((b, i) => (
-                <div key={i} className="flex items-center justify-between px-5 py-3">
-                  <div className="flex items-center gap-3">
-                    <span className="w-6 h-6 rounded-md bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-400">
-                      {i + 1}
+                <div key={i} className="flex items-center justify-between p-4 hover:bg-secondary/20 transition-colors">
+                  <div className="flex items-center gap-3.5 min-w-0 pr-4">
+                    <span className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-bold font-serif flex-shrink-0">
+                      #{i + 1}
                     </span>
-                    <div>
-                      <p className="text-sm font-medium text-zinc-200 line-clamp-1">{b.title}</p>
-                      <p className="text-xs text-zinc-500">{b.author}</p>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate">{b.title}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{b.author}</p>
                     </div>
                   </div>
-                  <Badge variant="info">{b.borrow_count}x</Badge>
+                  <Badge variant="secondary" className="font-bold flex-shrink-0">
+                    {b.borrow_count} kali pinjam
+                  </Badge>
                 </div>
               ))}
-              {topBooks.rows.length === 0 && <div className="px-5 py-6 text-center text-zinc-600 text-sm">Tidak ada data</div>}
+              {topBooks.rows.length === 0 && (
+                <div className="p-8 text-center text-muted-foreground text-xs italic">
+                  Belum ada aktivitas peminjaman buku pada periode ini.
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
 
         {/* Top Members */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Anggota Paling Aktif</CardTitle>
-            <CardDescription>5 anggota dengan peminjaman terbanyak</CardDescription>
+        <Card className="border-border/80 shadow-md">
+          <CardHeader className="pb-3 border-b border-border/60">
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-primary" />
+              <CardTitle className="font-serif text-base font-bold">Anggota Paling Aktif</CardTitle>
+            </div>
+            <CardDescription>5 anggota dengan intensitas peminjaman literatur tertinggi.</CardDescription>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="divide-y divide-zinc-800">
+            <div className="divide-y divide-border/60">
               {(topMembers.rows as any[]).map((m, i) => (
-                <div key={i} className="flex items-center justify-between px-5 py-3">
-                  <div className="flex items-center gap-3">
-                    <span className="w-6 h-6 rounded-md bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-400">
-                      {i + 1}
+                <div key={i} className="flex items-center justify-between p-4 hover:bg-secondary/20 transition-colors">
+                  <div className="flex items-center gap-3.5 min-w-0 pr-4">
+                    <span className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-bold font-serif flex-shrink-0">
+                      #{i + 1}
                     </span>
-                    <div>
-                      <p className="text-sm font-medium text-zinc-200">{m.name}</p>
-                      <p className="text-xs text-zinc-500">{m.email}</p>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate">{m.name}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{m.email}</p>
                     </div>
                   </div>
-                  <Badge variant="success">{m.loan_count} pinjaman</Badge>
+                  <Badge variant="success" className="font-bold flex-shrink-0">
+                    {m.loan_count} transaksi
+                  </Badge>
                 </div>
               ))}
-              {topMembers.rows.length === 0 && <div className="px-5 py-6 text-center text-zinc-600 text-sm">Tidak ada data</div>}
+              {topMembers.rows.length === 0 && (
+                <div className="p-8 text-center text-muted-foreground text-xs italic">
+                  Belum ada transaksi peminjaman anggota pada periode ini.
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Loan Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Detail Peminjaman</CardTitle>
-          <CardDescription>{loanReport.length} transaksi periode {formatDate(from)} â€” {formatDate(to)}</CardDescription>
+      {/* Detail Peminjaman */}
+      <Card className="border-border/80 shadow-md">
+        <CardHeader className="pb-4 border-b border-border/60">
+          <CardTitle className="font-serif text-lg font-bold">Rincian Transaksi Sirkulasi</CardTitle>
+          <CardDescription>
+            {loanReport.length} transaksi sirkulasi untuk rentang waktu {formatDate(from)} s/d {formatDate(to)}
+          </CardDescription>
         </CardHeader>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-zinc-800">
-                <th className="text-left px-5 py-3 text-xs font-medium text-zinc-500 uppercase">Anggota</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 uppercase">Buku</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 uppercase">Pinjam</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 uppercase">Jatuh Tempo</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 uppercase">Kembali</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 uppercase">Status</th>
+              <tr className="border-b border-border/80 bg-secondary/30">
+                <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Anggota
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Judul Koleksi
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Tgl Pinjam
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Jatuh Tempo
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Tgl Pengembalian
+                </th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Status
+                </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-800/50">
+            <tbody className="divide-y divide-border/60">
               {loanReport.slice(0, 50).map((loan) => (
-                <tr key={loan.id} className="hover:bg-zinc-900/30">
-                  <td className="px-5 py-2.5 text-zinc-300">{loan.memberName}</td>
-                  <td className="px-4 py-2.5 text-zinc-400 max-w-[200px] truncate">{loan.bookTitle}</td>
-                  <td className="px-4 py-2.5 text-zinc-500 text-xs">{formatDate(loan.loanDate)}</td>
-                  <td className="px-4 py-2.5 text-zinc-500 text-xs">{formatDate(loan.dueDate)}</td>
-                  <td className="px-4 py-2.5 text-zinc-500 text-xs">{formatDate(loan.returnDate)}</td>
-                  <td className="px-4 py-2.5">
-                    <Badge variant={loan.status === 'dikembalikan' ? 'success' : loan.status === 'terlambat' ? 'destructive' : 'info'}>
-                      {loan.status}
+                <tr key={loan.id} className="hover:bg-secondary/20 transition-colors">
+                  <td className="px-5 py-3 text-foreground font-medium text-xs">
+                    {loan.memberName}
+                  </td>
+                  <td className="px-4 py-3 text-foreground text-xs font-medium max-w-[240px] truncate">
+                    {loan.bookTitle}
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground text-xs whitespace-nowrap">
+                    {formatDate(loan.loanDate)}
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground text-xs whitespace-nowrap">
+                    {formatDate(loan.dueDate)}
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground text-xs whitespace-nowrap">
+                    {loan.returnDate ? formatDate(loan.returnDate) : '-'}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <Badge
+                      variant={
+                        loan.status === 'dikembalikan'
+                          ? 'success'
+                          : loan.status === 'terlambat'
+                          ? 'destructive'
+                          : 'warning'
+                      }
+                    >
+                      {loan.status === 'dikembalikan'
+                        ? 'Selesai'
+                        : loan.status === 'terlambat'
+                        ? 'Terlambat'
+                        : 'Dipinjam'}
                     </Badge>
                   </td>
                 </tr>
               ))}
+              {loanReport.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-5 py-12 text-center text-muted-foreground text-sm">
+                    Tidak ada rekaman transaksi sirkulasi pada rentang tanggal yang dipilih.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
