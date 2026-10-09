@@ -6,3 +6,5 @@ out/
 *.log
 *.tsbuildinfo
 .DS_Store
+.agents/
+skills-lock.json
