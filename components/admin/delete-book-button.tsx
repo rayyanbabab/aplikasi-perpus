@@ -3,14 +3,15 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { deleteBook } from '@/lib/actions/buku';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export function DeleteBookButton({ id, title }: { id: string; title: string }) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   async function handleDelete() {
-    if (!confirm(`Hapus buku "${title}"? Tindakan ini tidak bisa dibatalkan.`)) return;
+    if (!confirm(`Hapus buku "${title}" dari katalog perpustakaan? Tindakan ini tidak dapat dibatalkan.`)) return;
     setLoading(true);
     const result = await deleteBook(id);
     if (result.error) {
@@ -22,12 +23,16 @@ export function DeleteBookButton({ id, title }: { id: string; title: string }) {
   }
 
   return (
-    <button
+    <Button
+      variant="ghost"
+      size="sm"
       onClick={handleDelete}
       disabled={loading}
-      className="text-xs px-3 py-1.5 border border-red-900 rounded-md text-red-400 hover:bg-red-950/50 transition-colors disabled:opacity-50"
+      className="h-8 px-2.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+      title={`Hapus buku ${title}`}
     >
-      <Trash2 className="w-3 h-3" />
-    </button>
+      {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+      <span className="sr-only">Hapus</span>
+    </Button>
   );
 }
