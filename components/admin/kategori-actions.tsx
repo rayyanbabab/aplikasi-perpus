@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { createCategory, deleteCategory } from '@/lib/actions/buku';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Trash2, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, Trash2, Plus, AlertCircle } from 'lucide-react';
 
 interface Props {
   mode: 'create' | 'delete';
@@ -20,7 +21,7 @@ export function KategoriActions({ mode, id, name }: Props) {
 
   if (mode === 'delete') {
     async function handleDelete() {
-      if (!confirm(`Hapus kategori "${name}"?`)) return;
+      if (!confirm(`Hapus kategori "${name}"? Buku yang menggunakan kategori ini akan dialihkan ke kategori umum.`)) return;
       setLoading(true);
       const result = await deleteCategory(id!);
       if (result.error) alert(result.error);
@@ -29,13 +30,16 @@ export function KategoriActions({ mode, id, name }: Props) {
     }
 
     return (
-      <button
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={handleDelete}
         disabled={loading}
-        className="p-1.5 rounded-md border border-red-900 text-red-400 hover:bg-red-950/50 transition-colors disabled:opacity-50"
+        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+        title={`Hapus kategori ${name}`}
       >
         {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-      </button>
+      </Button>
     );
   }
 
@@ -45,8 +49,9 @@ export function KategoriActions({ mode, id, name }: Props) {
     setLoading(true);
     const formData = new FormData(e.currentTarget);
     const result = await createCategory(formData);
-    if (result.error) setError(result.error);
-    else {
+    if (result.error) {
+      setError(result.error);
+    } else {
       (e.target as HTMLFormElement).reset();
       router.refresh();
     }
@@ -54,24 +59,44 @@ export function KategoriActions({ mode, id, name }: Props) {
   }
 
   return (
-    <form onSubmit={handleCreate} className="space-y-3">
-      {error && <p className="text-sm text-red-400">{error}</p>}
+    <form onSubmit={handleCreate} className="space-y-4">
+      {error && (
+        <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-xl text-destructive text-xs flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          <p>{error}</p>
+        </div>
+      )}
       <div>
-        <Label htmlFor="catName">Nama Kategori</Label>
-        <Input id="catName" name="name" className="mt-1.5" required placeholder="contoh: Teknologi Informasi" />
+        <Label htmlFor="catName" className="text-xs font-semibold uppercase tracking-wider text-foreground">
+          Nama Kategori
+        </Label>
+        <Input
+          id="catName"
+          name="name"
+          className="mt-1.5"
+          required
+          placeholder="Contoh: Rekayasa Perangkat Lunak"
+        />
       </div>
       <div>
-        <Label htmlFor="catDesc">Deskripsi (opsional)</Label>
-        <Input id="catDesc" name="description" className="mt-1.5" placeholder="Deskripsi singkat..." />
+        <Label htmlFor="catDesc" className="text-xs font-semibold uppercase tracking-wider text-foreground">
+          Keterangan Singkat (Opsional)
+        </Label>
+        <Input
+          id="catDesc"
+          name="description"
+          className="mt-1.5"
+          placeholder="Ringkasan cakupan topik koleksi..."
+        />
       </div>
-      <button
+      <Button
         type="submit"
         disabled={loading}
-        className="flex items-center gap-2 px-4 py-2 bg-white text-black text-sm font-medium rounded-lg hover:bg-zinc-100 transition-colors disabled:opacity-50"
+        className="w-full h-10 font-semibold gap-2 shadow-sm"
       >
-        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-        {loading ? 'Menyimpan...' : 'Tambah Kategori'}
-      </button>
+        {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+        {loading ? 'Menyimpan Kategori...' : 'Tambah Kategori Koleksi'}
+      </Button>
     </form>
   );
 }
