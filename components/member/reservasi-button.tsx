@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { createReservation } from '@/lib/actions/reservasi';
 import { Loader2, Bookmark, BookmarkCheck } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface Props {
   bookId: string;
@@ -23,34 +24,36 @@ export function ReservasiButton({ bookId, bookTitle, userHasReservation }: Props
       setMessage(result.error);
     } else {
       setReserved(true);
-      setMessage((result as any).message ?? 'Reservasi berhasil!');
+      setMessage((result as any).message ?? 'Reservasi berhasil didaftarkan ke sistem.');
     }
     setLoading(false);
   }
 
   return (
-    <div className="space-y-2">
-      <button
+    <div className="space-y-2.5">
+      <Button
         onClick={handleReserve}
         disabled={loading || reserved}
-        className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+        className={`h-11 px-6 rounded-xl font-semibold gap-2 shadow-sm transition-all ${
           reserved
-            ? 'bg-emerald-900/40 border border-emerald-800 text-emerald-400 cursor-default'
-            : 'bg-white text-black hover:bg-zinc-100 active:bg-zinc-200'
-        } disabled:opacity-50`}
+            ? 'bg-emerald-950/40 border border-emerald-800/60 text-emerald-300 hover:bg-emerald-950/50 cursor-default'
+            : ''
+        }`}
       >
         {loading ? (
           <Loader2 className="w-4 h-4 animate-spin" />
         ) : reserved ? (
-          <BookmarkCheck className="w-4 h-4" />
+          <BookmarkCheck className="w-4 h-4 text-emerald-400" />
         ) : (
           <Bookmark className="w-4 h-4" />
         )}
-        {loading ? 'Memproses...' : reserved ? 'Sudah Direservasi' : 'Reservasi Buku Ini'}
-      </button>
+        {loading ? 'Memproses Reservasi...' : reserved ? 'Buku Telah Anda Reservasi' : 'Ajukan Reservasi Buku'}
+      </Button>
 
       {message && (
-        <p className={`text-xs ${reserved ? 'text-emerald-400' : 'text-red-400'}`}>{message}</p>
+        <p className={`text-xs font-medium ${reserved ? 'text-emerald-400' : 'text-destructive'}`}>
+          {message}
+        </p>
       )}
     </div>
   );
