@@ -1,0 +1,23 @@
+﻿name: Feature Request
+description: Sarankan fitur baru atau perbaikan untuk aplikasi
+title: '[FEAT]: '
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Terima kasih atas saran pengembangan fitur untuk aplikasi ini!
+  - type: textarea
+    id: problem
+    attributes:
+      label: Masalah yang ingin diselesaikan
+      description: Masalah apa yang menjadi latar belakang usulan fitur ini?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solusi yang Diusulkan
+      description: Bagaimana bentuk fitur atau solusi yang diinginkan?
+    validations:
+      required: true
