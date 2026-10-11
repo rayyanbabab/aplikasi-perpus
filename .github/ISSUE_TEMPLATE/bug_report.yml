@@ -1,0 +1,27 @@
+﻿name: Bug Report
+description: Laporkan kendala atau bug pada aplikasi
+title: '[BUG]: '
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Terima kasih telah melaporkan bug. Harap berikan detail selengkap mungkin.
+  - type: textarea
+    id: description
+    attributes:
+      label: Deskripsi Masalah
+      description: Jelaskan apa yang terjadi secara rinci.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Langkah untuk Mereproduksi
+      description: Bagaimana cara memunculkan masalah tersebut?
+      placeholder: |
+        1. Buka halaman '...'
+        2. Klik tombol '....'
+        3. Lihat pesan error
+    validations:
+      required: true
